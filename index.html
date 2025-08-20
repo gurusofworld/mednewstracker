@@ -3,28 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Medical Research Radar — v2.2 (Safe Dates + Self‑Tests)</title>
+  <title>Medical Research Radar — v2.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root{
+      --accent:#06b6d4; /* cyan-500 */
+      --hero1:#ecfeff;  /* cyan-50 */
+      --hero2:#ffffff;
+      --glow1:rgba(14,165,233,.12); /* sky-500 */
+      --glow2:rgba(8,145,178,.12);  /* cyan-600 */
+    }
     body{ font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+    .hero{ background: radial-gradient(60% 90% at 20% 10%, var(--glow1), transparent), radial-gradient(60% 80% at 80% 0%, var(--glow2), transparent), linear-gradient(180deg,var(--hero1),var(--hero2)); }
+    .brand{ color:var(--accent); }
     .card{ background:linear-gradient(180deg,#ffffff,#f8fbff); }
     .shadow-smooth{ box-shadow:0 10px 28px rgba(2,6,23,.06), 0 2px 8px rgba(2,6,23,.06); }
     .line-clamp-4{ display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
     .pill{ padding:.25rem .7rem; border-radius:9999px; font-size:.75rem; font-weight:600; border:1px solid rgb(203 213 225); background:rgba(255,255,255,.75); }
-    .hero{ background: radial-gradient(60% 90% at 20% 10%, rgba(14,165,233,.12), transparent), radial-gradient(60% 80% at 80% 0%, rgba(8,145,178,.12), transparent), linear-gradient(180deg,#ecfeff,#ffffff); }
+    .thumb{ width:84px; height:84px; object-fit:cover; border-radius:0.75rem; border:1px solid rgba(148,163,184,.35); }
+    .thumb-placeholder{ width:84px; height:84px; border-radius:0.75rem; border:1px dashed rgba(148,163,184,.5); background:linear-gradient(135deg, rgba(241,245,249,.8), rgba(226,232,240,.8)); display:flex; align-items:center; justify-content:center; }
   </style>
 </head>
 <body class="min-h-screen hero text-slate-800">
+  <!-- Header / Nav -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="text-2xl font-extrabold text-cyan-700">Medical Research Radar</h1>
-      <div class="flex gap-2">
-        <button id="refreshBtn" class="px-3 py-2 text-sm rounded-lg bg-cyan-600 text-white">Refresh</button>
-        <button id="runTestsBtn" class="px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white">Run self‑tests</button>
-      </div>
+      <h1 class="text-2xl font-extrabold brand">Medical Research Radar</h1>
+      <nav class="flex items-center gap-2">
+        <button id="homeBtn" class="px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Home</button>
+        <button id="allBtn" class="px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white hover:bg-slate-50">All</button>
+        <button id="refreshBtn" class="px-3 py-2 text-sm rounded-lg" style="background:var(--accent); color:white">Refresh</button>
+      </nav>
     </div>
-    <div class="max-w-7xl mx-auto px-4 pb-3 grid sm:grid-cols-12 gap-3">
+
+    <!-- Controls (shown on All view) -->
+    <div id="controls" class="max-w-7xl mx-auto px-4 pb-3 grid sm:grid-cols-12 gap-3">
       <div class="sm:col-span-8 flex gap-2">
         <input id="searchInput" placeholder="Search topics, journals, tags…" class="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white" />
         <button id="clearSearch" class="px-3 py-2 rounded-lg border">Clear</button>
@@ -39,24 +53,34 @@
 
   <main class="max-w-7xl mx-auto px-4 py-6">
     <div id="status" class="text-sm text-slate-600"></div>
-    <div id="tests" class="hidden mt-3 p-4 rounded-xl border border-slate-200 bg-white text-sm"></div>
-    <div id="cards" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    <!-- Home (Specialties) View -->
+    <section id="homeView" class="mt-4">
+      <h2 class="text-lg font-semibold mb-3">Browse by specialty</h2>
+      <div id="specialtyGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- All Reports View -->
+    <section id="allView" class="mt-4 hidden">
+      <div id="cards" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </section>
   </main>
 
   <footer class="border-t py-6 text-center text-sm text-slate-500">
-    <p>Sources include NEJM, JAMA, BMJ, Lancet, Nature, PLOS; Indian sources (IJMR, ICMR, MoHFW); trusted news (Medscape, STAT, WHO, CDC). Edit FEEDS below to add more specialties.</p>
+    <p>Sources include NEJM, JAMA, BMJ, Lancet, Nature, PLOS; Indian sources (IJMR, ICMR, MoHFW); trusted news (Medscape, STAT, WHO, CDC).</p>
+    <p class="mt-2 font-semibold">Created by Maria Manuel</p>
   </footer>
 
   <script>
     // ====================== FETCH STRATEGY ======================
-    // Use a JSON service first (rss2json), then fall back to raw XML via CORS proxies.
+    // JSON service first (rss2json), then raw XML via CORS proxies.
     const JSON_API = (rssUrl)=>`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
     const RAW_PROXIES = [
       (url)=>`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
       (url)=>`https://cors.isomorphic-git.org/${encodeURIComponent(url)}`
     ];
 
-    const CACHE_KEY = 'medradar_v2_2';
+    const CACHE_KEY = 'medradar_v2_4';
     const CACHE_MIN = 5; // minutes
 
     // ====================== FEEDS ======================
@@ -70,13 +94,18 @@
       { name:'PLOS Medicine', url:'https://journals.plos.org/plosmedicine/feed/atom', tags:['General Medicine','Global Health'] },
       { name:'Annals of Internal Medicine', url:'https://www.acpjournals.org/action/showFeed?type=etoc&feed=rss&jc=aim', tags:['Internal Medicine'] },
 
-      // Specialty slices (add more anytime)
+      // Cardiology
       { name:'Circulation', url:'https://www.ahajournals.org/action/showFeed?type=etoc&feed=rss&jc=circulationaha', tags:['Cardiology'] },
       { name:'European Heart Journal', url:'https://academic.oup.com/eurheartj/advance-article-xml/ehj.xml', tags:['Cardiology'] },
       { name:'JACC', url:'https://www.jacc.org/rss/site_16/0.xml', tags:['Cardiology'] },
+
+      // Oncology / Hematology
       { name:'Lancet Oncology', url:'https://www.thelancet.com/rssfeed/lanonc_current.xml', tags:['Oncology'] },
       { name:'Journal of Clinical Oncology', url:'https://ascopubs.org/action/showFeed?type=etoc&feed=rss&jc=jco', tags:['Oncology'] },
       { name:'Blood', url:'https://ashpublications.org/rss/site_8/0.xml', tags:['Hematology'] },
+      { name:'Annals of Surgical Oncology', url:'https://link.springer.com/search.rss?facet-journal-id=10434&facet-content-type=Article&sortOrder=newestFirst', tags:['Surgery','Oncology'] },
+
+      // ID / Neuro / Psych / Endo / GI / Nephro
       { name:'Lancet Infectious Diseases', url:'https://www.thelancet.com/rssfeed/lancetinfdis_current.xml', tags:['Infectious Disease'] },
       { name:'Neurology (AAN)', url:'https://www.neurology.org/rss/current.xml', tags:['Neurology'] },
       { name:'Lancet Psychiatry', url:'https://www.thelancet.com/rssfeed/lanpsy_current.xml', tags:['Psychiatry'] },
@@ -84,7 +113,32 @@
       { name:'Gastroenterology', url:'https://www.gastrojournal.org/current.rss', tags:['Gastroenterology'] },
       { name:'Kidney International', url:'https://www.kidney-international.org/current.rss', tags:['Nephrology'] },
       { name:'CJASN', url:'https://cjasn.asnjournals.org/rss/current.xml', tags:['Nephrology'] },
+
+      // SURGERY — expanded + subspecialties
       { name:'Annals of Surgery', url:'https://journals.lww.com/annalsofsurgery/_layouts/15/oaks.journals/rss.aspx?issue=Current+Issue', tags:['Surgery'] },
+      { name:'JAMA Surgery', url:'https://jamanetwork.com/rss/site_29/0.xml', tags:['Surgery'] },
+      { name:'British Journal of Surgery (BJS)', url:'https://academic.oup.com/bjs/advance-article-xml/bjs.xml', tags:['Surgery'] },
+      { name:'BJS Open', url:'https://onlinelibrary.wiley.com/feed/24749842/most-recent', tags:['Surgery'] },
+      { name:'Surgery (Elsevier)', url:'https://www.surgjournal.com/current.rss', tags:['Surgery'] },
+      { name:'Journal of Surgical Oncology', url:'https://onlinelibrary.wiley.com/feed/10969098/most-recent', tags:['Surgery','Oncology'] },
+      { name:'World Journal of Emergency Surgery', url:'https://wjes.biomedcentral.com/articles/rss.xml', tags:['Surgery','Emergency Medicine'] },
+      { name:'World Journal of Surgical Oncology', url:'https://wjso.biomedcentral.com/articles/rss.xml', tags:['Surgery','Oncology'] },
+      { name:"Langenbeck's Archives of Surgery", url:'https://link.springer.com/search.rss?facet-journal-id=423&facet-content-type=Article&sortOrder=newestFirst', tags:['Surgery'] },
+      { name:'Annals of Thoracic Surgery', url:'https://www.annalsthoracicsurgery.org/current.rss', tags:['Surgery','Cardiothoracic'] },
+      { name:'Trauma Surgery & Acute Care Open (BMJ)', url:'https://tsaco.bmj.com/rss', tags:['Surgery','Emergency Medicine'] },
+      { name:'Plastic & Reconstructive Surgery (PRS)', url:'https://journals.lww.com/plasreconsurg/_layouts/15/oaks.journals/rss.aspx?issue=Current+Issue', tags:['Surgery','Plastic Surgery'] },
+      { name:'Journal of Vascular Surgery', url:'https://www.jvascsurg.org/current.rss', tags:['Surgery','Vascular'] },
+      { name:'Annals of Vascular Surgery', url:'https://www.annalsofvascularsurgery.com/current.rss', tags:['Surgery','Vascular'] },
+      { name:'Transplantation', url:'https://journals.lww.com/transplantjournal/_layouts/15/oaks.journals/rss.aspx?issue=Current+Issue', tags:['Surgery','Transplant'] },
+      { name:'American Journal of Transplantation', url:'https://onlinelibrary.wiley.com/feed/16006135/most-recent', tags:['Surgery','Transplant'] },
+      { name:'Diseases of the Colon & Rectum', url:'https://journals.lww.com/dcrjournal/_layouts/15/oaks.journals/rss.aspx?issue=Current+Issue', tags:['Surgery','Colorectal'] },
+      { name:'Colorectal Disease', url:'https://onlinelibrary.wiley.com/feed/14631318/most-recent', tags:['Surgery','Colorectal'] },
+      { name:'HPB', url:'https://onlinelibrary.wiley.com/feed/14772574/most-recent', tags:['Surgery','HPB'] },
+      { name:'Surgical Endoscopy', url:'https://link.springer.com/search.rss?facet-journal-id=464&facet-content-type=Article&sortOrder=newestFirst', tags:['Surgery','MIS'] },
+      { name:'Journal of Neurosurgery', url:'https://thejns.org/rss/site_1/0.xml', tags:['Surgery','Neurosurgery'] },
+      { name:'Journal of Pediatric Surgery', url:'https://www.jpedsurg.org/current.rss', tags:['Surgery','Pediatric Surgery'] },
+
+      // Other clinical areas
       { name:'Bone & Joint Journal', url:'https://online.boneandjoint.org.uk/rss/site_8/0.xml', tags:['Orthopedics'] },
       { name:'Anesthesiology', url:'https://journals.lww.com/anesthesiology/_layouts/15/oaks.journals/rss.aspx?issue=Current+Issue', tags:['Anesthesiology'] },
       { name:'Radiology', url:'https://pubs.rsna.org/action/showFeed?type=etoc&feed=rss&jc=radiology', tags:['Radiology'] },
@@ -99,9 +153,9 @@
       { name:'Indian J Med Res (IJMR)', url:'https://ijmr.icmr.org.in/currentissue/rss', tags:['General Medicine','India'] },
       { name:'ICMR', url:'https://main.icmr.nic.in/rss.xml', tags:['Public Health','India'] },
       { name:'MoHFW India', url:'https://main.mohfw.gov.in/rss.xml', tags:['Public Health','India'] }
-      // Note: AIIMS site lists feeds on an HTML page; if you have a direct RSS URL, add it here.
     ];
 
+    // ====================== LOOK & FEEL ======================
     const TAG_COLORS = {
       'Cardiology':'bg-rose-100 text-rose-700 border-rose-200',
       'Oncology':'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
@@ -127,6 +181,13 @@
       'Rheumatology':'bg-purple-100 text-purple-800 border-purple-200',
       'Orthopedics':'bg-amber-100 text-amber-800 border-amber-200',
       'Surgery':'bg-slate-100 text-slate-800 border-slate-300',
+      'Plastic Surgery':'bg-pink-100 text-pink-800 border-pink-200',
+      'Vascular':'bg-red-100 text-red-800 border-red-200',
+      'Transplant':'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'Colorectal':'bg-amber-100 text-amber-800 border-amber-200',
+      'HPB':'bg-orange-100 text-orange-800 border-orange-200',
+      'MIS':'bg-indigo-100 text-indigo-800 border-indigo-200',
+      'Neurosurgery':'bg-sky-100 text-sky-800 border-sky-200',
       'Family Medicine':'bg-gray-100 text-gray-800 border-gray-300',
       'ENT':'bg-blue-100 text-blue-800 border-blue-200',
       'Dentistry':'bg-green-100 text-green-800 border-green-200',
@@ -139,78 +200,153 @@
       'Translational':'bg-indigo-100 text-indigo-800 border-indigo-200'
     };
 
-    // ====================== STATE ======================
-    const state = { all:[], filtered:[], query:'', tag:'', source:'', page:1 };
+    // Accent + background theme per tag
+    const TAG_THEME = {
+      'Surgery':        {accent:'#334155', hero1:'#f1f5f9', glow1:'rgba(51,65,85,.12)', glow2:'rgba(15,23,42,.08)'},
+      'Plastic Surgery':{accent:'#db2777', hero1:'#fff1f2', glow1:'rgba(236,72,153,.15)', glow2:'rgba(236,72,153,.08)'},
+      'Vascular':       {accent:'#dc2626', hero1:'#fef2f2', glow1:'rgba(239,68,68,.14)', glow2:'rgba(239,68,68,.08)'},
+      'Transplant':     {accent:'#059669', hero1:'#ecfdf5', glow1:'rgba(16,185,129,.14)', glow2:'rgba(16,185,129,.08)'},
+      'Colorectal':     {accent:'#d97706', hero1:'#fffbeb', glow1:'rgba(245,158,11,.15)', glow2:'rgba(245,158,11,.08)'},
+      'HPB':            {accent:'#ea580c', hero1:'#fff7ed', glow1:'rgba(234,88,12,.14)', glow2:'rgba(234,88,12,.08)'},
+      'MIS':            {accent:'#6366f1', hero1:'#eef2ff', glow1:'rgba(99,102,241,.14)', glow2:'rgba(99,102,241,.08)'},
+      'Neurosurgery':   {accent:'#0ea5e9', hero1:'#f0f9ff', glow1:'rgba(14,165,233,.14)', glow2:'rgba(14,165,233,.08)'},
+      'Cardiology':     {accent:'#e11d48', hero1:'#fff1f2', glow1:'rgba(244,63,94,.14)', glow2:'rgba(244,63,94,.08)'},
+      'Oncology':       {accent:'#a21caf', hero1:'#fdf4ff', glow1:'rgba(192,132,252,.14)', glow2:'rgba(168,85,247,.08)'},
+      'General Medicine':{accent:'#06b6d4', hero1:'#ecfeff', glow1:'rgba(14,165,233,.12)', glow2:'rgba(8,145,178,.12)'}
+    };
 
-    // ====================== HELPERS (robust date handling) ======================
+    // Specialty icons (inline SVG)
+    function iconFor(tag){
+      const s = (tag||'').toLowerCase();
+      if(s.includes('cardio')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 8.5c0 5-9 12-9 12S3 13.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3z"/></svg>';
+      if(s.includes('neuro')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3h8a5 5 0 0 1 5 5v2a6 6 0 0 1-6 6h-1l-2 4-2-4H9a6 6 0 0 1-6-6V8a5 5 0 0 1 5-5z"/></svg>';
+      if(s.includes('oncolog')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a9 9 0 0 1 0 18"/></svg>';
+      if(s.includes('infect')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"/></svg>';
+      if(s.includes('endo')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M6 7h12M6 12h12M6 17h12"/></svg>';
+      if(s.includes('gastro')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v6a4 4 0 0 0 4 4h1a4 4 0 0 0 4-4V3"/></svg>';
+      if(s.includes('neph')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3a6 6 0 0 0-6 6v3a6 6 0 0 0 6 6M16 3a6 6 0 0 1 6 6v3a6 6 0 0 1-6 6"/></svg>';
+      if(s.includes('derm')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M4 10a8 8 0 0 1 16 0M4 14a8 8 0 0 0 16 0"/></svg>';
+      if(s.includes('urolog')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8a5 5 0 1 0 10 0M12 13v8"/></svg>';
+      if(s.includes('pediat')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>';
+      if(s.includes('radiol')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>';
+      if(s.includes('orthop')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 21 17 3M7 3 17 21"/></svg>';
+      if(s.includes('surgery')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l7 7 11-11-3-3L10 16l-4-4z"/></svg>';
+      return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/></svg>';
+    }
+
+    // ====================== STATE ======================
+    const state = { all:[], filtered:[], query:'', tag:'', source:'', view:'home' };
+
+    // ====================== HELPERS (robust date & media) ======================
     function parseDateToTs(raw){
       if(!raw) return null;
       if(raw instanceof Date){ const t = raw.getTime(); return Number.isFinite(t)? t : null; }
       if(typeof raw === 'number'){ return Number.isFinite(raw)? raw : null; }
       if(typeof raw !== 'string') return null;
       const s = raw.trim();
-      // Try native
-      let d = new Date(s);
-      if(Number.isFinite(d.getTime())) return d.getTime();
-      // Common tweaks
-      d = new Date(s.replace('GMT','UTC'));
-      if(Number.isFinite(d.getTime())) return d.getTime();
-      // If looks like 'YYYY-MM-DD HH:MM:SS', treat as UTC
-      if(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/.test(s)){
-        d = new Date(s.replace(' ', 'T')+'Z');
-        if(Number.isFinite(d.getTime())) return d.getTime();
-      }
-      // If only date 'YYYY-MM-DD'
-      if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
-        d = new Date(s+'T00:00:00Z');
-        if(Number.isFinite(d.getTime())) return d.getTime();
-      }
+      let d = new Date(s); if(Number.isFinite(d.getTime())) return d.getTime();
+      d = new Date(s.replace('GMT','UTC')); if(Number.isFinite(d.getTime())) return d.getTime();
+      if(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/.test(s)){ d = new Date(s.replace(' ','T')+'Z'); if(Number.isFinite(d.getTime())) return d.getTime(); }
+      if(/^\d{4}-\d{2}-\d{2}$/.test(s)){ d = new Date(s+'T00:00:00Z'); if(Number.isFinite(d.getTime())) return d.getTime(); }
       return null;
     }
-
-    function fmtDateSafe(ts){
-      if(!Number.isFinite(ts)) return 'Date unknown';
-      try{ return new Intl.DateTimeFormat('en-IN',{ dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Kolkata'}).format(new Date(ts)); }
-      catch{ return 'Date unknown'; }
-    }
-
+    function fmtDateSafe(ts){ if(!Number.isFinite(ts)) return 'Date unknown'; try{ return new Intl.DateTimeFormat('en-IN',{ dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Kolkata'}).format(new Date(ts)); } catch{ return 'Date unknown'; } }
     function sanitizeHTML(html){ const tmp=document.createElement('div'); tmp.innerHTML=html||''; tmp.querySelectorAll('script,style').forEach(e=>e.remove()); return (tmp.textContent||'').replace(/\s+/g,' ').trim(); }
     function faviconFor(url){ try{ const host=new URL(url).hostname; return `https://icons.duckduckgo.com/ip3/${host}.ico`; }catch{ return ''; } }
     function primaryCategory(tags){ return (tags && tags.length)? tags[0] : 'General Medicine'; }
     function makeTagPills(tags){ return (tags||[]).map(t=>`<span class="pill ${(TAG_COLORS[t]||'bg-slate-100 text-slate-800 border-slate-300')}">${t}</span>`).join(''); }
     function whatsappShareText(item){ const t = `${item.title}\n\n${item.highlights? item.highlights+"\n\n":''}${item.link}`; return `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`; }
 
+    function extractImgFromHTML(html){
+      if(!html) return '';
+      const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+      return m? m[1] : '';
+    }
+
+    function extractImageFromJson(it){
+      let url = it.thumbnail || (it.enclosure && (it.enclosure.link||it.enclosure.url)) || '';
+      if(!url && typeof it.content === 'string') url = extractImgFromHTML(it.content);
+      if(!url && typeof it.description === 'string') url = extractImgFromHTML(it.description);
+      return url || '';
+    }
+
+    function xmlAttr(el, name){ return el? (el.getAttribute(name)||'') : ''; }
+    function extractImageFromXml(node){
+      let url = '';
+      const encl = node.getElementsByTagName('enclosure')[0];
+      if(encl && /image\//i.test(xmlAttr(encl,'type')||'')) url = xmlAttr(encl,'url');
+      if(!url){ const mc = node.getElementsByTagName('media:content')[0] || node.getElementsByTagName('content')[0]; if(mc && /image\//i.test(xmlAttr(mc,'type')||'')) url = xmlAttr(mc,'url'); }
+      if(!url){ const mt = node.getElementsByTagName('media:thumbnail')[0] || node.getElementsByTagName('thumbnail')[0]; if(mt) url = xmlAttr(mt,'url'); }
+      if(!url){
+        const desc = (node.getElementsByTagName('description')[0]?.textContent || node.getElementsByTagName('summary')[0]?.textContent || '').trim();
+        url = extractImgFromHTML(desc);
+      }
+      return url || '';
+    }
+
     // ====================== UI HELPERS ======================
     function setStatus(t){ document.getElementById('status').textContent=t; }
+    function setThemeFor(tag){
+      const theme = TAG_THEME[tag] || TAG_THEME['General Medicine'];
+      document.documentElement.style.setProperty('--accent', theme.accent);
+      document.documentElement.style.setProperty('--hero1', theme.hero1);
+      document.documentElement.style.setProperty('--glow1', theme.glow1);
+      document.documentElement.style.setProperty('--glow2', theme.glow2);
+    }
+
     function buildFilters(){
       const sources=[...new Set(FEEDS.map(f=>f.name))].sort();
       const tags=[...new Set(FEEDS.flatMap(f=>f.tags||[]))].sort();
       document.getElementById('sourceSelect').innerHTML = '<option value="">All sources</option>' + sources.map(s=>`<option value="${s}">${s}</option>`).join('');
       document.getElementById('tagSelect').innerHTML = '<option value="">All specialties</option>' + tags.map(t=>`<option value="${t}">${t}</option>`).join('');
-      document.getElementById('tagCloud').innerHTML = ['Cardiology','Oncology','Infectious Disease','Surgery','Orthopedics','Neurology','Psychiatry','Pediatrics','Radiology','Endocrinology','Gastroenterology','Nephrology','Dermatology','Obstetrics & Gynecology','Urology','Emergency Medicine','Critical Care','Ophthalmology','Rheumatology','Family Medicine','Public Health','India']
+      document.getElementById('tagCloud').innerHTML = ['Cardiology','Oncology','Infectious Disease','Surgery','Plastic Surgery','Vascular','Transplant','Colorectal','HPB','MIS','Neurosurgery','Orthopedics','Neurology','Psychiatry','Pediatrics','Radiology','Endocrinology','Gastroenterology','Nephrology','Dermatology','Obstetrics & Gynecology','Urology','Emergency Medicine','Critical Care','Ophthalmology','Rheumatology','Family Medicine','Public Health','India']
         .filter(t=>tags.includes(t))
-        .map(t=>`<button class="pill ${(TAG_COLORS[t]||'bg-slate-100 border-slate-300')} hover:opacity-90" onclick="state.tag='${t}'; applyFilters();">${t}</button>`)
+        .map(t=>`<button class="pill ${(TAG_COLORS[t]||'bg-slate-100 border-slate-300')} hover:opacity-90" onclick="state.tag='${t}'; setThemeFor('${t}'); switchTo('all'); applyFilters();">${t}</button>`)
         .join('');
+    }
+
+    function buildSpecialtyGrid(){
+      const grid = document.getElementById('specialtyGrid');
+      const counts = {};
+      for(const item of state.all){ for(const t of (item.tags||[])){ counts[t] = (counts[t]||0)+1; } }
+      const tags=[...new Set(FEEDS.flatMap(f=>f.tags||[]))].sort();
+      grid.innerHTML = tags.map(t=>{
+        const count = counts[t]||0;
+        const hint = count? `${count} report${count>1?'s':''}` : 'No recent reports';
+        const icon = iconFor(t);
+        return `<button class="w-full text-left p-4 rounded-2xl border bg-white shadow-smooth hover:shadow-md transition ${TAG_COLORS[t]||''}"
+                  onclick="state.tag='${t}'; setThemeFor('${t}'); switchTo('all'); applyFilters();">
+                  <div class="flex items-center gap-2 text-base font-semibold"><span class="inline-flex items-center justify-center w-6 h-6 rounded-full border">${icon}</span> ${t}</div>
+                  <div class="text-xs mt-1 opacity-80">${hint}</div>
+                </button>`;
+      }).join('');
+    }
+
+    function switchTo(view){
+      state.view = view;
+      document.getElementById('homeView').classList.toggle('hidden', view!== 'home');
+      document.getElementById('allView').classList.toggle('hidden', view!== 'all');
+      document.getElementById('controls').classList.toggle('hidden', view!== 'all');
     }
 
     function applyFilters(){
       let rows=[...state.all];
-      const q=state.query.trim().toLowerCase();
+      const q=(state.query||'').trim().toLowerCase();
       if(q){ rows=rows.filter(r=> (r.title||'').toLowerCase().includes(q) || (r.highlights||'').toLowerCase().includes(q) || (r.source||'').toLowerCase().includes(q) || (r.tags||[]).join(' ').toLowerCase().includes(q)); }
       if(state.tag){ rows=rows.filter(r=> (r.tags||[]).includes(state.tag)); }
       if(state.source){ rows=rows.filter(r=> r.source===state.source); }
       state.filtered = rows;
-      render();
+      renderAll();
     }
 
-    function render(){
+    function renderAll(){
       const cards=document.getElementById('cards');
       if(!state.filtered.length){
-        cards.innerHTML = `<div class="p-6 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900">
-          <div class="font-semibold">No items yet.</div>
-          <ul class="mt-2 text-sm list-disc pl-5 space-y-1">
-            <li>Click <strong>Refresh</strong> to retry (cache resets after ${CACHE_MIN} min).</li>
-            <li>Some journals block public proxies; a tiny backend proxy (Cloudflare Worker) will make 100% load.</li>
+        cards.innerHTML = `<div class=\"p-6 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900\">
+          <div class=\"font-semibold\">No recent reports for this selection.</div>
+          <ul class=\"mt-2 text-sm list-disc pl-5 space-y-1\">
+            <li>Try <strong>Home</strong> to pick another specialty or click <strong>All</strong> to see everything.</li>
+            <li>Some journals block public proxies; not all categories will load every time.</li>
           </ul>
         </div>`;
         return;
@@ -218,18 +354,21 @@
       cards.innerHTML = state.filtered.map(item=>{
         const cat = primaryCategory(item.tags);
         const siteIcon = faviconFor(item.link);
+        const icon = iconFor(cat);
+        const img = item.image || '';
+        const thumb = img ? `<img src="${img}" class="thumb" loading="lazy" alt="preview" onerror="this.remove()"/>` : `<div class="thumb-placeholder">${icon}</div>`;
         return `
           <article class="card p-4 rounded-2xl border shadow-smooth hover:shadow-lg transition">
             <div class="flex items-start gap-3">
-              <img src="${siteIcon}" alt="icon" class="w-5 h-5 mt-1 rounded" onerror="this.style.display='none'"/>
-              <div class="flex-1">
-                <div class="text-xs text-slate-500">${item.source}</div>
-                <a href="${item.link}" target="_blank" rel="noopener" class="mt-1 block text-base font-semibold leading-tight text-cyan-700 hover:underline">${item.title}</a>
+              ${thumb}
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 text-xs text-slate-500"><img src="${siteIcon}" alt="icon" class="w-4 h-4 rounded" onerror="this.style.display='none'"/><span>${item.source}</span></div>
+                <a href="${item.link}" target="_blank" rel="noopener" class="mt-1 block text-base font-semibold leading-tight text-slate-900 hover:text-[var(--accent)]">${item.title}</a>
                 <p class="mt-2 text-sm text-slate-700 line-clamp-4">${item.highlights||''}</p>
                 <div class="mt-3 flex flex-wrap gap-2 items-center">
-                  ${makeTagPills(item.tags)}
+                  <span class="pill bg-white text-slate-600 border-slate-300 inline-flex items-center gap-1">${icon} ${cat}</span>
+                  ${makeTagPills(item.tags.slice(1))}
                   <span class="pill bg-white text-slate-600 border-slate-300">${fmtDateSafe(item.ts)}</span>
-                  <span class="pill bg-white text-slate-600 border-slate-300">Category: <strong class="ml-1">${cat}</strong></span>
                   <a href="${whatsappShareText(item)}" target="_blank" class="ml-auto px-2 py-1 text-xs rounded-md border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">Share</a>
                 </div>
               </div>
@@ -253,12 +392,14 @@
       if(!j || !j.items) throw new Error('rss2json no items');
       return j.items.map(it=>{
         const ts = parseDateToTs(it.pubDate || it.pubdate || it.date || it.updated);
+        const image = extractImageFromJson(it);
         return {
           source: feed.name,
           title: it.title || '(untitled)',
           link: it.link || it.guid || feed.url,
           highlights: sanitizeHTML(it.description || it.content || '' ).slice(0, 320),
-          ts, // numeric timestamp or null
+          ts,
+          image,
           tags: feed.tags || []
         };
       });
@@ -283,7 +424,8 @@
         const highlights = sanitizeHTML(desc).slice(0, 320);
         const rawDate = (node.getElementsByTagName('pubDate')[0]?.textContent || node.getElementsByTagName('published')[0]?.textContent || node.getElementsByTagName('updated')[0]?.textContent || '').trim();
         const ts = parseDateToTs(rawDate);
-        return { source:feed.name, title, link: link || feed.url, highlights, ts, tags: feed.tags || [] };
+        const image = extractImageFromXml(node);
+        return { source:feed.name, title, link: link || feed.url, highlights, ts, image, tags: feed.tags || [] };
       });
     }
 
@@ -294,75 +436,54 @@
     }
 
     async function loadAll(){
-      setStatus('Loading…');
+      setStatus('Please wait: Searching all sources…');
       buildFilters();
       // Cache
       const t = Number(localStorage.getItem(CACHE_KEY+':t')||0);
       if(Date.now()-t < CACHE_MIN*60*1000){
-        try{ const cached = JSON.parse(localStorage.getItem(CACHE_KEY)||'[]'); if(Array.isArray(cached) && cached.length){ state.all=cached; state.all.sort(sortByTsDesc); state.filtered=[...state.all]; render(); setStatus(`${state.all.length} items (cache) • Updated ${fmtDateSafe(Date.now())}`); return; } }catch{}
+        try{ const cached = JSON.parse(localStorage.getItem(CACHE_KEY)||'[]'); if(Array.isArray(cached) && cached.length){ state.all=cached; state.all.sort(sortByTsDesc); state.filtered=[...state.all]; renderAll(); buildSpecialtyGrid(); setStatus(`${state.all.length} reports (cache)`); return; } }catch{}
       }
 
-      // Fetch in parallel
       const results = [];
       await Promise.allSettled(FEEDS.map(async f=>{ try{ const rows=await fetchFeed(f); results.push(...rows); }catch(e){ console.warn('Feed failed', f.name, e); } }));
 
-      // Sort: recent first; null dates go to the bottom
       results.sort(sortByTsDesc);
       state.all = results;
       state.filtered = [...results];
       localStorage.setItem(CACHE_KEY, JSON.stringify(results));
       localStorage.setItem(CACHE_KEY+':t', String(Date.now()));
 
-      render();
-      setStatus(`${results.length} items • Updated ${fmtDateSafe(Date.now())}`);
+      renderAll();
+      buildSpecialtyGrid();
+      setStatus(`${results.length} reports • Updated ${fmtDateSafe(Date.now())}`);
     }
 
     function sortByTsDesc(a,b){
-      const ta = Number.isFinite(a.ts)? a.ts : -Infinity; // undefined -> bottom
+      const ta = Number.isFinite(a.ts)? a.ts : -Infinity;
       const tb = Number.isFinite(b.ts)? b.ts : -Infinity;
       return tb - ta;
     }
 
     // ====================== EVENTS ======================
+    document.getElementById('homeBtn').addEventListener('click', ()=>{ state.tag=''; state.query=''; state.source=''; setThemeFor('General Medicine'); switchTo('home'); applyFilters(); });
+    document.getElementById('allBtn').addEventListener('click', ()=>{ setThemeFor('General Medicine'); switchTo('all'); applyFilters(); });
     document.getElementById('searchInput').addEventListener('input', e=>{ state.query=e.target.value||''; applyFilters(); });
     document.getElementById('clearSearch').addEventListener('click', ()=>{ state.query=''; document.getElementById('searchInput').value=''; applyFilters(); });
-    document.getElementById('tagSelect').addEventListener('change', e=>{ state.tag=e.target.value||''; applyFilters(); });
-    document.getElementById('sourceSelect').addEventListener('change', e=>{ state.source=e.target.value||''; applyFilters(); });
-    document.getElementById('refreshBtn').addEventListener('click', ()=>{ localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_KEY+':t'); loadAll(); });
-    document.getElementById('runTestsBtn').addEventListener('click', runSelfTests);
-
-    // ====================== SELF‑TESTS (unit tests for date parsing) ======================
-    function runSelfTests(){
-      const panel=document.getElementById('tests'); panel.classList.remove('hidden'); panel.innerHTML='Running tests…';
-      const cases = [
-        { s:'Tue, 20 Aug 2024 12:34:56 GMT', ok:true },
-        { s:'2025-08-20T12:34:56Z', ok:true },
-        { s:'Wed, 20 Aug 2025 12:34:56 +0000', ok:true },
-        { s:'2025-08-20 12:34:56', ok:true },
-        { s:'2025-08-20', ok:true },
-        { s:'', ok:false },
-        { s:undefined, ok:false },
-        { s:'not a date', ok:false }
-      ];
-      const results = [];
-      for(const c of cases){
-        let ts=null, passed=false, err='';
-        try{ ts = parseDateToTs(c.s); passed = (!!ts) === c.ok; }catch(e){ passed = !c.ok; err = e.message||String(e); }
-        // Also ensure fmtDateSafe never throws
-        try{ fmtDateSafe(ts); }catch(e){ passed=false; err = 'fmt threw'; }
-        results.push({input:c.s, expected:c.ok, got:!!ts, passed, err});
-      }
-      const allPass = results.every(r=>r.passed);
-      panel.innerHTML = `<div class="font-semibold ${allPass?'text-emerald-700':'text-rose-700'}">Self‑tests ${allPass?'passed ✅':'had failures ❌'}</div>
-        <table class="mt-3 w-full text-xs">
-          <thead><tr class="text-left"><th class="py-1 pr-2">Input</th><th class="py-1 pr-2">Expected</th><th class="py-1 pr-2">Got</th><th class="py-1 pr-2">Pass</th><th class="py-1 pr-2">Notes</th></tr></thead>
-          <tbody>
-            ${results.map(r=>`<tr class="border-t"><td class="py-1 pr-2 whitespace-pre">${String(r.input)}</td><td class="py-1 pr-2">${r.expected}</td><td class="py-1 pr-2">${r.got}</td><td class="py-1 pr-2">${r.passed?'✅':'❌'}</td><td class="py-1 pr-2">${r.err||''}</td></tr>`).join('')}
-          </tbody>
-        </table>`;
-    }
+    document.getElementById('tagSelect').addEventListener('change', e=>{ state.tag=e.target.value||''; setThemeFor(state.tag||'General Medicine'); switchTo('all'); applyFilters(); });
+    document.getElementById('sourceSelect').addEventListener('change', e=>{ state.source=e.target.value||''; switchTo('all'); applyFilters(); });
+    document.getElementById('refreshBtn').addEventListener('click', async ()=>{
+      try{
+        document.getElementById('refreshBtn').disabled = true;
+        setStatus('Please wait: Searching all sources…');
+        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(CACHE_KEY+':t');
+        await loadAll();
+      }finally{ document.getElementById('refreshBtn').disabled = false; }
+    });
 
     // ====================== START ======================
+    setThemeFor('General Medicine');
+    switchTo('home');
     loadAll();
   </script>
 </body>

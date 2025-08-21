@@ -315,7 +315,7 @@
       document.documentElement.style.setProperty('--glow2', 'rgba(8,145,178,.12)');
     }
 
-    // Tag cloud (ALL + full specialties + More)
+    // Tag cloud (ALL + full specialties)
     function renderTagCloud(){
       const tags=[...new Set(FEEDS.flatMap(f=>f.tags||[]))].sort();
       const parts=[];

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Medical Research Radar — v2.4</title>
+  <title>Medical Research Radar — v2.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{
       --accent:#06b6d4; /* cyan-500 */
@@ -20,42 +20,45 @@
     .card{ background:linear-gradient(180deg,#ffffff,#f8fbff); }
     .shadow-smooth{ box-shadow:0 10px 28px rgba(2,6,23,.06), 0 2px 8px rgba(2,6,23,.06); }
     .line-clamp-4{ display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
-    .pill{ padding:.25rem .7rem; border-radius:9999px; font-size:.75rem; font-weight:600; border:1px solid rgb(203 213 225); background:rgba(255,255,255,.75); }
+    .pill{ padding:.35rem .8rem; border-radius:9999px; font-size:.9rem; font-weight:600; border:1px solid rgb(203 213 225); background:rgba(255,255,255,.75); }
     .thumb{ width:84px; height:84px; object-fit:cover; border-radius:0.75rem; border:1px solid rgba(148,163,184,.35); }
     .thumb-placeholder{ width:84px; height:84px; border-radius:0.75rem; border:1px dashed rgba(148,163,184,.5); background:linear-gradient(135deg, rgba(241,245,249,.8), rgba(226,232,240,.8)); display:flex; align-items:center; justify-content:center; }
   </style>
 </head>
 <body class="min-h-screen hero text-slate-800">
-  <!-- Header / Nav -->
+  <!-- Slim sticky header just for backdrop -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/60 border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 py-2"><!-- Title removed here to avoid duplication; controls moved into banner --></div>
+    <div class="max-w-7xl mx-auto px-4 py-2"></div>
   </header>
 
-  <!-- Hero Banner -->
+  <!-- Hero Banner (title + highlight + buttons) -->
   <section id="heroBanner" class="relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 pt-6">
       <div class="relative rounded-3xl border border-slate-200 bg-white/80 backdrop-blur p-6 sm:p-8 shadow-smooth overflow-hidden">
         <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full" style="background:radial-gradient(closest-side,var(--glow1),transparent)"></div>
         <div class="absolute -left-8 -bottom-12 w-60 h-60 rounded-full" style="background:radial-gradient(closest-side,var(--glow2),transparent)"></div>
 
-        <!-- Nav moved into banner (right side) -->
-        <nav class="absolute right-4 top-4 flex items-center gap-2">
-          <button id="homeBtn" class="px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white/90 hover:bg-slate-50">Home</button>
-          <button id="allBtn" class="px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white/90 hover:bg-slate-50">All</button>
-          <button id="refreshBtn" class="px-3 py-2 text-sm rounded-lg" style="background:var(--accent); color:white">Refresh</button>
+        <!-- Buttons (mobile-safe wrap) -->
+        <nav class="absolute right-4 top-4 flex flex-wrap items-center gap-2 justify-end sm:flex-nowrap">
+          <button id="homeBtn" class="px-2 py-1 text-xs sm:px-3 sm:py-2 sm:text-sm rounded-lg border border-slate-300 bg-white/90 hover:bg-slate-50">Home</button>
+          <button id="allBtn" class="px-2 py-1 text-xs sm:px-3 sm:py-2 sm:text-sm rounded-lg border border-slate-300 bg-white/90 hover:bg-slate-50">All</button>
+          <button id="refreshBtn" class="px-2 py-1 text-xs sm:px-3 sm:py-2 sm:text-sm rounded-lg" style="background:var(--accent); color:white">Refresh</button>
         </nav>
 
         <div class="relative">
-          <h2 class="mt-2 text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] text-slate-900">
+          <h1 class="mt-2 text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] text-slate-900">
             <span class="brand">Medical Research Radar</span>
-          </h2>
-          <p class="mt-3 text-slate-600 max-w-3xl">Latest Medical Research Papers, Studies and News — all in one place.</p>
+          </h1>
+          <p class="mt-3 text-base sm:text-lg text-slate-700 max-w-3xl">
+            Latest Medical Research Papers, Studies and News — all in one place.
+          </p>
         </div>
       </div>
     </div>
   </section>
 
-  <main class="max-w-7xl mx-auto px-4 py-6">
+  <!-- Controls (search + selects + tag cloud) -->
+  <section class="max-w-7xl mx-auto px-4 pt-4">
     <div id="controls" class="pb-3 grid sm:grid-cols-12 gap-3">
       <div class="sm:col-span-8 flex gap-2">
         <input id="searchInput" placeholder="Search topics, journals, tags…" class="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white" />
@@ -68,9 +71,12 @@
     </div>
     <div id="tagCloud" class="pb-2 flex flex-wrap gap-2"></div>
     <div id="status" class="text-sm text-slate-600"></div>
+  </section>
+
+  <main class="max-w-7xl mx-auto px-4 pb-8">
     <!-- Home (Specialties) View -->
     <section id="homeView" class="mt-4">
-      <h2 class="text-lg font-semibold mb-3">Browse by specialty</h2>
+      <h3 class="text-lg font-semibold mb-3">Browse by specialty</h3>
       <div id="specialtyGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
     </section>
 
@@ -87,14 +93,13 @@
 
   <script>
     // ====================== FETCH STRATEGY ======================
-    // JSON service first (rss2json), then raw XML via CORS proxies.
     const JSON_API = (rssUrl)=>`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
     const RAW_PROXIES = [
       (url)=>`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
       (url)=>`https://cors.isomorphic-git.org/${encodeURIComponent(url)}`
     ];
 
-    const CACHE_KEY = 'medradar_v2_4';
+    const CACHE_KEY = 'medradar_v2_6';
     const CACHE_MIN = 5; // minutes
 
     // ====================== FEEDS ======================
@@ -226,7 +231,6 @@
       'Critical Care':'bg-cyan-100 text-cyan-800 border-cyan-200',
       'Anesthesiology':'bg-teal-100 text-teal-800 border-teal-200',
       'Radiology':'bg-cyan-100 text-cyan-800 border-cyan-200',
-      'Cardiothoracic':'bg-sky-100 text-sky-800 border-sky-200',
       'Pathology':'bg-slate-100 text-slate-800 border-slate-200',
       'Ophthalmology':'bg-teal-100 text-teal-800 border-teal-200',
       'Rheumatology':'bg-purple-100 text-purple-800 border-purple-200',
@@ -248,47 +252,14 @@
       'Public Health':'bg-green-100 text-green-800 border-green-200',
       'Global Health':'bg-green-100 text-green-800 border-green-200',
       'India':'bg-orange-50 text-orange-800 border-orange-200',
-      'Translational':'bg-indigo-100 text-indigo-800 border-indigo-200'
+      'Translational':'bg-indigo-100 text-indigo-800 border-indigo-200',
+      'Cardiothoracic':'bg-sky-100 text-sky-800 border-sky-200'
     };
-
-    // Accent + background theme per tag
-    const TAG_THEME = {
-      'Surgery':        {accent:'#334155', hero1:'#f1f5f9', glow1:'rgba(51,65,85,.12)', glow2:'rgba(15,23,42,.08)'},
-      'Plastic Surgery':{accent:'#db2777', hero1:'#fff1f2', glow1:'rgba(236,72,153,.15)', glow2:'rgba(236,72,153,.08)'},
-      'Vascular':       {accent:'#dc2626', hero1:'#fef2f2', glow1:'rgba(239,68,68,.14)', glow2:'rgba(239,68,68,.08)'},
-      'Transplant':     {accent:'#059669', hero1:'#ecfdf5', glow1:'rgba(16,185,129,.14)', glow2:'rgba(16,185,129,.08)'},
-      'Colorectal':     {accent:'#d97706', hero1:'#fffbeb', glow1:'rgba(245,158,11,.15)', glow2:'rgba(245,158,11,.08)'},
-      'HPB':            {accent:'#ea580c', hero1:'#fff7ed', glow1:'rgba(234,88,12,.14)', glow2:'rgba(234,88,12,.08)'},
-      'MIS':            {accent:'#6366f1', hero1:'#eef2ff', glow1:'rgba(99,102,241,.14)', glow2:'rgba(99,102,241,.08)'},
-      'Neurosurgery':   {accent:'#0ea5e9', hero1:'#f0f9ff', glow1:'rgba(14,165,233,.14)', glow2:'rgba(14,165,233,.08)'},
-      'Cardiology':     {accent:'#e11d48', hero1:'#fff1f2', glow1:'rgba(244,63,94,.14)', glow2:'rgba(244,63,94,.08)'},
-      'Oncology':       {accent:'#a21caf', hero1:'#fdf4ff', glow1:'rgba(192,132,252,.14)', glow2:'rgba(168,85,247,.08)'},
-      'General Medicine':{accent:'#06b6d4', hero1:'#ecfeff', glow1:'rgba(14,165,233,.12)', glow2:'rgba(8,145,178,.12)'}
-    };
-
-    // Specialty icons (inline SVG)
-    function iconFor(tag){
-      const s = (tag||'').toLowerCase();
-      if(s.includes('cardio')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 8.5c0 5-9 12-9 12S3 13.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3z"/></svg>';
-      if(s.includes('neuro')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3h8a5 5 0 0 1 5 5v2a6 6 0 0 1-6 6h-1l-2 4-2-4H9a6 6 0 0 1-6-6V8a5 5 0 0 1 5-5z"/></svg>';
-      if(s.includes('oncolog')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a9 9 0 0 1 0 18"/></svg>';
-      if(s.includes('infect')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"/></svg>';
-      if(s.includes('endo')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M6 7h12M6 12h12M6 17h12"/></svg>';
-      if(s.includes('gastro')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v6a4 4 0 0 0 4 4h1a4 4 0 0 0 4-4V3"/></svg>';
-      if(s.includes('neph')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3a6 6 0 0 0-6 6v3a6 6 0 0 0 6 6M16 3a6 6 0 0 1 6 6v3a6 6 0 0 1-6 6"/></svg>';
-      if(s.includes('derm')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M4 10a8 8 0 0 1 16 0M4 14a8 8 0 0 0 16 0"/></svg>';
-      if(s.includes('urolog')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8a5 5 0 1 0 10 0M12 13v8"/></svg>';
-      if(s.includes('pediat')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>';
-      if(s.includes('radiol')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>';
-      if(s.includes('orthop')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 21 17 3M7 3 17 21"/></svg>';
-      if(s.includes('surgery')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l7 7 11-11-3-3L10 16l-4-4z"/></svg>';
-      return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/></svg>';
-    }
 
     // ====================== STATE ======================
-    const state = { all:[], filtered:[], query:'', tag:'', source:'', view:'home' };
+    const state = { all:[], filtered:[], query:'', tag:'', source:'', view:'home', loading:false, pageSize:60 };
 
-    // ====================== HELPERS (robust date & media) ======================
+    // ====================== HELPERS ======================
     function parseDateToTs(raw){
       if(!raw) return null;
       if(raw instanceof Date){ const t = raw.getTime(); return Number.isFinite(t)? t : null; }
@@ -307,20 +278,13 @@
     function primaryCategory(tags){ return (tags && tags.length)? tags[0] : 'General Medicine'; }
     function makeTagPills(tags){ return (tags||[]).map(t=>`<span class="pill ${(TAG_COLORS[t]||'bg-slate-100 text-slate-800 border-slate-300')}">${t}</span>`).join(''); }
     function whatsappShareText(item){ const t = `${item.title}\n\n${item.highlights? item.highlights+"\n\n":''}${item.link}`; return `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`; }
-
-    function extractImgFromHTML(html){
-      if(!html) return '';
-      const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-      return m? m[1] : '';
-    }
-
+    function extractImgFromHTML(html){ if(!html) return ''; const m = html.match(/<img[^>]+src=["']([^"']+)["']/i); return m? m[1] : ''; }
     function extractImageFromJson(it){
       let url = it.thumbnail || (it.enclosure && (it.enclosure.link||it.enclosure.url)) || '';
       if(!url && typeof it.content === 'string') url = extractImgFromHTML(it.content);
       if(!url && typeof it.description === 'string') url = extractImgFromHTML(it.description);
       return url || '';
     }
-
     function xmlAttr(el, name){ return el? (el.getAttribute(name)||'') : ''; }
     function extractImageFromXml(node){
       let url = '';
@@ -335,25 +299,44 @@
       return url || '';
     }
 
-    // ====================== UI HELPERS ======================
-    function setStatus(t){ document.getElementById('status').textContent=t; }
+    // UI helpers
+    function setStatus(t, big=false){
+      const el=document.getElementById('status');
+      el.textContent=t;
+      el.classList.toggle('text-lg', !!big);
+      el.classList.toggle('font-semibold', !!big);
+      el.classList.toggle('text-cyan-700', !!big);
+    }
     function setThemeFor(tag){
-      const theme = TAG_THEME[tag] || TAG_THEME['General Medicine'];
-      document.documentElement.style.setProperty('--accent', theme.accent);
-      document.documentElement.style.setProperty('--hero1', theme.hero1);
-      document.documentElement.style.setProperty('--glow1', theme.glow1);
-      document.documentElement.style.setProperty('--glow2', theme.glow2);
+      // keep default cyan for now (you can expand per-specialty themes later)
+      document.documentElement.style.setProperty('--accent', '#06b6d4');
+      document.documentElement.style.setProperty('--hero1', '#ecfeff');
+      document.documentElement.style.setProperty('--glow1', 'rgba(14,165,233,.12)');
+      document.documentElement.style.setProperty('--glow2', 'rgba(8,145,178,.12)');
     }
 
+    // Tag cloud (ALL + full specialties + More)
+    function renderTagCloud(){
+      const tags=[...new Set(FEEDS.flatMap(f=>f.tags||[]))].sort();
+      const parts=[];
+      parts.push(`<button class="pill bg-white border-slate-300" onclick="state.tag=''; state.pageSize=60; applyFilters();">ALL</button>`);
+      for(const t of tags){
+        parts.push(`<button class="pill ${(TAG_COLORS[t]||'bg-slate-100 border-slate-300')} hover:opacity-90" onclick="state.tag='${t}'; state.pageSize=60; applyFilters();">${t}</button>`);
+      }
+      if(state.filtered && state.filtered.length > (state.pageSize||0)){
+        const remaining = state.filtered.length - (state.pageSize||0);
+        parts.push(`<button class="pill bg-cyan-600 text-white border-cyan-600" onclick="state.pageSize += 60; renderAll(); renderTagCloud();">More (${remaining})</button>`);
+      }
+      document.getElementById('tagCloud').innerHTML = parts.join('');
+    }
+
+    // ====================== BUILD UI ======================
     function buildFilters(){
       const sources=[...new Set(FEEDS.map(f=>f.name))].sort();
       const tags=[...new Set(FEEDS.flatMap(f=>f.tags||[]))].sort();
       document.getElementById('sourceSelect').innerHTML = '<option value="">All sources</option>' + sources.map(s=>`<option value="${s}">${s}</option>`).join('');
       document.getElementById('tagSelect').innerHTML = '<option value="">All specialties</option>' + tags.map(t=>`<option value="${t}">${t}</option>`).join('');
-      document.getElementById('tagCloud').innerHTML = ['Cardiology','Oncology','Infectious Disease','Surgery','Cardiothoracic','Plastic Surgery','Vascular','Transplant','Colorectal','HPB','MIS','Neurosurgery','Orthopedics','Neurology','Psychiatry','Pediatrics','Radiology','Endocrinology','Gastroenterology','Nephrology','Dermatology','Obstetrics & Gynecology','Urology','Emergency Medicine','Critical Care','Ophthalmology','Rheumatology','Family Medicine','Public Health','India']
-        .filter(t=>tags.includes(t))
-        .map(t=>`<button class="pill ${(TAG_COLORS[t]||'bg-slate-100 border-slate-300')} hover:opacity-90" onclick="state.tag='${t}'; setThemeFor('${t}'); switchTo('all'); applyFilters();">${t}</button>`)
-        .join('');
+      renderTagCloud();
     }
 
     function buildSpecialtyGrid(){
@@ -364,10 +347,9 @@
       grid.innerHTML = tags.map(t=>{
         const count = counts[t]||0;
         const hint = count? `${count} report${count>1?'s':''}` : 'No recent reports';
-        const icon = iconFor(t);
         return `<button class="w-full text-left p-4 rounded-2xl border bg-white shadow-smooth hover:shadow-md transition ${TAG_COLORS[t]||''}"
-                  onclick="state.tag='${t}'; setThemeFor('${t}'); switchTo('all'); applyFilters();">
-                  <div class="flex items-center gap-2 text-base font-semibold"><span class="inline-flex items-center justify-center w-6 h-6 rounded-full border">${icon}</span> ${t}</div>
+                  onclick="state.tag='${t}'; state.pageSize=60; switchTo('all'); applyFilters();">
+                  <div class="text-base font-semibold">${t}</div>
                   <div class="text-xs mt-1 opacity-80">${hint}</div>
                 </button>`;
       }).join('');
@@ -377,7 +359,6 @@
       state.view = view;
       document.getElementById('homeView').classList.toggle('hidden', view!== 'home');
       document.getElementById('allView').classList.toggle('hidden', view!== 'all');
-      // Controls stay visible on both views
     }
 
     function applyFilters(){
@@ -388,21 +369,38 @@
       if(state.source){ rows=rows.filter(r=> r.source===state.source); }
       state.filtered = rows;
       renderAll();
+      renderTagCloud();
+      if(!state.loading){ setStatus(`${state.filtered.length} reports`); }
+    }
+
+    function iconFor(tag){
+      const s = (tag||'').toLowerCase();
+      if(s.includes('cardio')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 8.5c0 5-9 12-9 12S3 13.5 3 8.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3z"/></svg>';
+      if(s.includes('neuro') && !s.includes('surg')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3h8a5 5 0 0 1 5 5v2a6 6 0 0 1-6 6h-1l-2 4-2-4H9a6 6 0 0 1-6-6V8a5 5 0 0 1 5-5z"/></svg>';
+      if(s.includes('neuro') && s.includes('surg')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l7 7 11-11-3-3L10 16l-4-4z"/></svg>';
+      if(s.includes('oncolog')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a9 9 0 0 1 0 18"/></svg>';
+      if(s.includes('infect')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"/></svg>';
+      if(s.includes('endo')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M6 7h12M6 12h12M6 17h12"/></svg>';
+      if(s.includes('gastro')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v6a4 4 0 0 0 4 4h1a4 4 0 0 0 4-4V3"/></svg>';
+      if(s.includes('neph')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3a6 6 0 0 0-6 6v3a6 6 0 0 0 6 6M16 3a6 6 0 0 1 6 6v3a6 6 0 0 1-6 6"/></svg>';
+      if(s.includes('pediat')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>';
+      if(s.includes('radiol')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>';
+      if(s.includes('orthop')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 21 17 3M7 3 17 21"/></svg>';
+      if(s.includes('surgery')) return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l7 7 11-11-3-3L10 16l-4-4z"/></svg>';
+      return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/></svg>';
     }
 
     function renderAll(){
       const cards=document.getElementById('cards');
       if(!state.filtered.length){
-        cards.innerHTML = `<div class=\"p-6 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900\">
-          <div class=\"font-semibold\">No recent reports for this selection.</div>
-          <ul class=\"mt-2 text-sm list-disc pl-5 space-y-1\">
-            <li>Try <strong>Home</strong> to pick another specialty or click <strong>All</strong> to see everything.</li>
-            <li>Some journals block public proxies; not all categories will load every time.</li>
-          </ul>
+        if(state.loading){ cards.innerHTML = ''; return; }
+        cards.innerHTML = `<div class="p-6 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900">
+          <div class="font-semibold">No reports for this selection.</div>
         </div>`;
         return;
       }
-      cards.innerHTML = state.filtered.map(item=>{
+      const list = state.filtered.slice(0, state.pageSize || state.filtered.length);
+      cards.innerHTML = list.map(item=>{
         const cat = primaryCategory(item.tags);
         const siteIcon = faviconFor(item.link);
         const icon = iconFor(cat);
@@ -420,7 +418,7 @@
                   <span class="pill bg-white text-slate-600 border-slate-300 inline-flex items-center gap-1">${icon} ${cat}</span>
                   ${makeTagPills(item.tags.slice(1))}
                   <span class="pill bg-white text-slate-600 border-slate-300">${fmtDateSafe(item.ts)}</span>
-                  <a href="${whatsappShareText(item)}" target="_blank" class="ml-auto px-2 py-1 text-xs rounded-md border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">Share</a>
+                  <a href="${whatsappShareText(item)}" target="_blank" class="ml-auto px-2 py-1 text-xs rounded-md border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">WhatsApp</a>
                 </div>
               </div>
             </div>
@@ -435,7 +433,6 @@
       }
       throw new Error('All raw proxies failed for '+url);
     }
-
     async function fetchFeedJSON(feed){
       const r = await fetch(JSON_API(feed.url), { cache:'no-store' });
       if(!r.ok) throw new Error('rss2json HTTP '+r.status);
@@ -455,13 +452,11 @@
         };
       });
     }
-
     function getAtomLink(node){
       const links = Array.from(node.getElementsByTagName('link'));
       const alt = links.find(l=> (l.getAttribute('rel')||'').toLowerCase()==='alternate' && l.getAttribute('href'));
       return (alt && alt.getAttribute('href')) || (links[0]?.getAttribute('href')) || (links[0]?.textContent) || '';
     }
-
     async function fetchFeedXML(feed){
       const txt = await fetchViaProxies(feed.url);
       const xml = new DOMParser().parseFromString(txt, 'text/xml');
@@ -479,53 +474,77 @@
         return { source:feed.name, title, link: link || feed.url, highlights, ts, image, tags: feed.tags || [] };
       });
     }
-
     async function fetchFeed(feed){
       try{ return await fetchFeedJSON(feed); }catch(e){ console.warn('rss2json failed', feed.name, e.message||e); }
       try{ return await fetchFeedXML(feed); }catch(e){ console.warn('XML fetch failed', feed.name, e.message||e); }
       return [];
     }
 
-    async function loadAll(){
-      setStatus('Please wait: Searching all sources…');
-      buildFilters();
-      // Cache
-      const t = Number(localStorage.getItem(CACHE_KEY+':t')||0);
-      if(Date.now()-t < CACHE_MIN*60*1000){
-        try{ const cached = JSON.parse(localStorage.getItem(CACHE_KEY)||'[]'); if(Array.isArray(cached) && cached.length){ state.all=cached; state.all.sort(sortByTsDesc); state.filtered=[...state.all]; renderAll(); buildSpecialtyGrid(); setStatus(`${state.all.length} reports`); return; } }catch{}
-      }
-
-      const results = [];
-      await Promise.allSettled(FEEDS.map(async f=>{ try{ const rows=await fetchFeed(f); results.push(...rows); }catch(e){ console.warn('Feed failed', f.name, e); } }));
-
-      results.sort(sortByTsDesc);
-      state.all = results;
-      state.filtered = [...results];
-      localStorage.setItem(CACHE_KEY, JSON.stringify(results));
-      localStorage.setItem(CACHE_KEY+':t', String(Date.now()));
-
-      renderAll();
-      buildSpecialtyGrid();
-      setStatus(`${results.length} reports • Updated ${fmtDateSafe(Date.now())}`);
-    }
-
+    // ====================== LOAD ======================
     function sortByTsDesc(a,b){
       const ta = Number.isFinite(a.ts)? a.ts : -Infinity;
       const tb = Number.isFinite(b.ts)? b.ts : -Infinity;
       return tb - ta;
     }
 
+    async function loadAll(){
+      state.loading = true;
+      setStatus('Please wait: Searching all sources…', true);
+      buildFilters();
+
+      // Try cache
+      const t = Number(localStorage.getItem(CACHE_KEY+':t')||0);
+      if(Date.now()-t < CACHE_MIN*60*1000){
+        try{
+          const cached = JSON.parse(localStorage.getItem(CACHE_KEY)||'[]');
+          if(Array.isArray(cached) && cached.length){
+            const freshCached = cached.filter(r => Number.isFinite(r.ts) && r.ts >= (Date.now() - 365*24*60*60*1000));
+            state.all = freshCached.sort(sortByTsDesc);
+            state.filtered = [...state.all];
+            renderAll();
+            renderTagCloud();
+            buildSpecialtyGrid();
+            state.loading = false;
+            setStatus(`${state.all.length} reports`);
+            return;
+          }
+        }catch{}
+      }
+
+      // Fetch live
+      const results = [];
+      await Promise.allSettled(FEEDS.map(async f=>{ try{ const rows=await fetchFeed(f); results.push(...rows); }catch(e){ console.warn('Feed failed', f.name, e); } }));
+
+      // Exclude older than 12 months
+      const cutoff = Date.now() - 365*24*60*60*1000;
+      const fresh = results.filter(r => Number.isFinite(r.ts) && r.ts >= cutoff);
+
+      fresh.sort(sortByTsDesc);
+      state.all = fresh;
+      state.filtered = [...fresh];
+
+      localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+      localStorage.setItem(CACHE_KEY+':t', String(Date.now()));
+
+      renderAll();
+      renderTagCloud();
+      buildSpecialtyGrid();
+      state.loading = false;
+      setStatus(`${fresh.length} reports • Updated ${fmtDateSafe(Date.now())}`);
+    }
+
     // ====================== EVENTS ======================
-    document.getElementById('homeBtn').addEventListener('click', ()=>{ state.tag=''; state.query=''; state.source=''; setThemeFor('General Medicine'); switchTo('home'); applyFilters(); });
-    document.getElementById('allBtn').addEventListener('click', ()=>{ setThemeFor('General Medicine'); switchTo('all'); applyFilters(); });
+    document.getElementById('homeBtn').addEventListener('click', ()=>{ state.tag=''; state.query=''; state.source=''; state.pageSize=60; setThemeFor(); switchTo('home'); applyFilters(); });
+    document.getElementById('allBtn').addEventListener('click', ()=>{ state.pageSize=60; setThemeFor(); switchTo('all'); applyFilters(); });
     document.getElementById('searchInput').addEventListener('input', e=>{ state.query=e.target.value||''; applyFilters(); });
     document.getElementById('clearSearch').addEventListener('click', ()=>{ state.query=''; document.getElementById('searchInput').value=''; applyFilters(); });
-    document.getElementById('tagSelect').addEventListener('change', e=>{ state.tag=e.target.value||''; setThemeFor(state.tag||'General Medicine'); switchTo('all'); applyFilters(); });
-    document.getElementById('sourceSelect').addEventListener('change', e=>{ state.source=e.target.value||''; switchTo('all'); applyFilters(); });
+    document.getElementById('tagSelect').addEventListener('change', e=>{ state.tag=e.target.value||''; state.pageSize=60; switchTo('all'); applyFilters(); });
+    document.getElementById('sourceSelect').addEventListener('change', e=>{ state.source=e.target.value||''; state.pageSize=60; switchTo('all'); applyFilters(); });
     document.getElementById('refreshBtn').addEventListener('click', async ()=>{
       try{
         document.getElementById('refreshBtn').disabled = true;
-        setStatus('Please wait: Searching all sources…');
+        state.loading = true;
+        setStatus('Please wait: Searching all sources…', true);
         localStorage.removeItem(CACHE_KEY);
         localStorage.removeItem(CACHE_KEY+':t');
         await loadAll();
@@ -533,9 +552,12 @@
     });
 
     // ====================== START ======================
-    setThemeFor('General Medicine');
+    setThemeFor();
     switchTo('home');
     loadAll();
+
+    // Surface runtime errors to status line
+    window.addEventListener('error', (e)=>{ try{ setStatus('Error: '+ e.message); }catch(_){} });
   </script>
 </body>
 </html>
